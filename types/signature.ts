@@ -4,6 +4,9 @@ export interface SignatureData {
   department: string;
   phone: string;
   email: string;
+  facebookUrl: string;
+  instagramUrl: string;
+  linkedinUrl: string;
 }
 
 export const emptySignature: SignatureData = {
@@ -12,4 +15,7 @@ export const emptySignature: SignatureData = {
   department: "",
   phone: "",
   email: "",
+  facebookUrl: "",
+  instagramUrl: "",
+  linkedinUrl: "",
 };

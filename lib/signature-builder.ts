@@ -11,6 +11,7 @@ const WEBSITE_LABEL = "www.salesianos.br/unidade/colegio-salesiano-resende";
 const WEBSITE_URL =
   "https://www.salesianos.br/unidade/colegio-salesiano-resende";
 const FACEBOOK_URL = "https://www.facebook.com/saleresende/?locale=pt_BR";
+const INSTAGRAM_URL = "https://www.instagram.com/salesianoresende";
 const LINKEDIN_URL = "https://www.linkedin.com/in/salesiano-resende-colégio/";
 const DEFAULT_ASSET_BASE =
   process.env.NEXT_PUBLIC_SIGNATURE_ASSET_BASE?.trim() ||
@@ -23,29 +24,38 @@ export function buildSignatureHTML(
   const normalizedBase = base.trim().replace(/\/+$/, "");
   const img = (path: string) => `${normalizedBase}${path}`;
   const emailAddr = data.email.trim() || EMAIL_FALLBACK;
+  const facebookUrl = normalizeUrl(data.facebookUrl, FACEBOOK_URL);
+  const instagramUrl = normalizeUrl(data.instagramUrl, INSTAGRAM_URL);
+  const linkedinUrl = normalizeUrl(data.linkedinUrl, LINKEDIN_URL);
 
   const directPhoneRow = data.phone.trim()
     ? `<tr>
-        <td style="padding-bottom:5px;vertical-align:middle;">
-          <img src="${img("/assets/phone.png")}" alt="" width="14" height="14"
-            style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
-          <a href="tel:${sanitizePhone(data.phone)}"
-            style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
-            ${esc(data.phone)}
-          </a>
+        <td style="padding-bottom:5px;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tbody><tr>
+            <td style="vertical-align:middle;padding-right:6px;line-height:0;">
+              <img src="${img("/assets/phone.png")}" alt="" width="14" height="14"
+                style="display:block;border:0;" />
+            </td>
+            <td style="vertical-align:middle;white-space:nowrap;">
+              <a href="tel:${sanitizePhone(data.phone)}"
+                style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;line-height:1.2;display:inline-block;white-space:nowrap;word-break:normal;overflow-wrap:normal;">
+                ${esc(data.phone)}
+              </a>
+            </td>
+          </tr></tbody></table>
         </td>
       </tr>`
     : "";
 
   return `
-<table cellpadding="0" cellspacing="0" border="0"
-  style="font-family:Arial,Helvetica,sans-serif;max-width:580px;border-collapse:collapse;">
+<table cellpadding="0" cellspacing="0" border="0" width="580"
+  style="font-family:Arial,Helvetica,sans-serif;width:580px;border-collapse:collapse;">
   <tbody>
     <tr>
-      <td style="vertical-align:top;padding-right:18px;">
+      <td width="212" style="vertical-align:top;padding-right:18px;">
         <table cellpadding="0" cellspacing="0" border="0"><tbody>
           <tr>
-            <td style="font-size:17px;font-weight:700;color:${BLUE};white-space:nowrap;
+            <td style="font-size:17px;font-weight:700;color:${BLUE};
                        padding-bottom:3px;font-family:Arial,Helvetica,sans-serif;">
               ${esc(data.name)}
             </td>
@@ -61,36 +71,48 @@ export function buildSignatureHTML(
       </td>
       <td style="width:2px;background-color:${BLUE};opacity:0.1">&nbsp;</td>
       <td style="width:16px;">&nbsp;</td>
-      <td style="vertical-align:top;padding-right:18px;">
+      <td width="212" style="vertical-align:top;padding-right:18px;">
         <table cellpadding="0" cellspacing="0" border="0"><tbody>
           ${directPhoneRow}
           <tr>
-            <td style="padding-bottom:5px;vertical-align:middle;">
-              <img src="${img("/assets/mail.png")}" alt="" width="14" height="14"
-                style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
-              <a href="mailto:${emailAddr}"
-                style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
-                ${esc(emailAddr)}
-              </a>
+            <td style="padding-bottom:5px;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tbody><tr>
+                <td style="vertical-align:middle;padding-right:6px;line-height:0;">
+                  <img src="${img("/assets/mail.png")}" alt="" width="14" height="14"
+                    style="display:block;border:0;" />
+                </td>
+                <td style="vertical-align:middle;white-space:nowrap;">
+                  <a href="mailto:${emailAddr}"
+                    style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;line-height:1.2;display:inline-block;white-space:nowrap;word-break:normal;overflow-wrap:normal;">
+                    ${esc(emailAddr)}
+                  </a>
+                </td>
+              </tr></tbody></table>
             </td>
           </tr>
           <tr>
             <td style="vertical-align:middle;">
-              <img src="${img("/assets/link.png")}" alt="" width="14" height="14"
-                style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
-              <a href="${WEBSITE_URL}" target="_blank"
-                style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
-                ${WEBSITE_LABEL}
-              </a>
+              <table cellpadding="0" cellspacing="0" border="0"><tbody><tr>
+                <td style="vertical-align:top;padding-right:6px;line-height:0;padding-top:1px;">
+                  <img src="${img("/assets/link.png")}" alt="" width="14" height="14"
+                    style="display:block;border:0;" />
+                </td>
+                <td style="vertical-align:top;">
+                  <a href="${WEBSITE_URL}" target="_blank"
+                    style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;line-height:1.2;display:inline-block;">
+                    ${WEBSITE_LABEL}
+                  </a>
+                </td>
+              </tr></tbody></table>
             </td>
           </tr>
         </tbody></table>
       </td>
       <td style="width:16px;">&nbsp;</td>
-      <td style="vertical-align:middle;">
+      <td width="86" style="vertical-align:middle;">
         <a href="${WEBSITE_URL}" target="_blank">
           <img src="${img("/assets/logo-salesiano-resende.png")}"
-            alt="${INSTITUTION}" width="100" style="display:block;border:0;" />
+            alt="${INSTITUTION}" width="86" style="display:block;border:0;" />
         </a>
       </td>
     </tr>
@@ -109,17 +131,17 @@ export function buildSignatureHTML(
             <td style="width:1px;background-color:${BLUE};opacity:0.1;">&nbsp;</td>
             <td style="width:10px;">&nbsp;</td>
             <td style="vertical-align:middle;padding-right:6px;">
-              <a href="${FACEBOOK_URL}" target="_blank">
+              <a href="${facebookUrl}" target="_blank">
                 <img src="${img("/assets/facebook.png")}" alt="Facebook" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
             <td style="vertical-align:middle;padding-right:6px;">
-              <a href="https://www.instagram.com/salesianoresende" target="_blank">
+              <a href="${instagramUrl}" target="_blank">
                 <img src="${img("/assets/instagram.png")}" alt="Instagram" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
             <td style="vertical-align:middle;">
-              <a href="${LINKEDIN_URL}" target="_blank">
+              <a href="${linkedinUrl}" target="_blank">
                 <img src="${img("/assets/linkedin.png")}" alt="LinkedIn" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
@@ -143,4 +165,18 @@ function esc(str: string): string {
 function sanitizePhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   return `+55${digits.startsWith("0") ? digits.slice(1) : digits}`;
+}
+
+function normalizeUrl(value: string, fallback: string): string {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return fallback;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
 }

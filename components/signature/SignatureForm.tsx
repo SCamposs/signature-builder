@@ -23,6 +23,9 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
     department: "",
     phone: "",
     email: "",
+    facebookUrl: "",
+    instagramUrl: "",
+    linkedinUrl: "",
   });
 
   const [errors, setErrors] = useState<FieldError>({});
@@ -146,6 +149,42 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
             {errors.email}
           </p>
         )}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="facebookUrl">Facebook (opcional)</Label>
+        <Input
+          id="facebookUrl"
+          name="facebookUrl"
+          value={form.facebookUrl}
+          onChange={handleChange}
+          placeholder="Ex: https://facebook.com/seu.perfil"
+          type="url"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="instagramUrl">Instagram (opcional)</Label>
+        <Input
+          id="instagramUrl"
+          name="instagramUrl"
+          value={form.instagramUrl}
+          onChange={handleChange}
+          placeholder="Ex: https://instagram.com/seu.perfil"
+          type="url"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="linkedinUrl">LinkedIn (opcional)</Label>
+        <Input
+          id="linkedinUrl"
+          name="linkedinUrl"
+          value={form.linkedinUrl}
+          onChange={handleChange}
+          placeholder="Ex: https://linkedin.com/in/seu-perfil"
+          type="url"
+        />
       </div>
 
       <Button
