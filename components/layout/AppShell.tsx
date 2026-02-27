@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-3 text-center text-xs text-slate-400">
         Instituto São José Salesiano – Resende &copy; {new Date().getFullYear()}{" "}
-        - desenvolvido por Ítalo Soares Campos
+        - desenvolvido por <strong>Ítalo Soares Campos</strong>
       </footer>
     </div>
   );

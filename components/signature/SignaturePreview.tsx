@@ -123,7 +123,7 @@ ${html}
   return (
     <div className="flex flex-col gap-4">
       {/* Área de preview */}
-      <div className="max-h-[500px] overflow-auto rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="max-h-125 overflow-auto rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
           Preview da assinatura
         </p>

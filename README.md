@@ -51,6 +51,17 @@ npm run dev
 # Acesse http://localhost:3000 para usar o gerador de assinaturas
 ```
 
+## Assets para email (Outlook)
+
+- A assinatura gerada usa URLs absolutas para imagens por padrão: `https://signature-salesiano.vercel.app`
+- Para trocar o domínio dos assets, configure `NEXT_PUBLIC_SIGNATURE_ASSET_BASE`
+
+Exemplo em `.env.local`:
+
+```bash
+NEXT_PUBLIC_SIGNATURE_ASSET_BASE=https://signature-salesiano.vercel.app
+```
+
 ## Escopo atual
 
 - Não possui autenticação
@@ -68,6 +79,4 @@ npm run dev
 
 ## Status
 
-MVP funcional em ambiente local, faltam ajustes nos svgs que não aparecem, e talvez melhoria leve na barra que divide as infos da pessoa com as infos da instituição. O código está organizado e comentado para facilitar futuras evoluções.
-
-remover stylesheets de cor e usar tudo no tailwind e variáveis no global.css para manter consistência e facilitar manutenção.
+MVP funcional com compatibilidade para Gmail e Outlook usando PNG e URLs absolutas de assets.

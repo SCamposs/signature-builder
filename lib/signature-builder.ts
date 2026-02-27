@@ -12,16 +12,23 @@ const WEBSITE_URL =
   "https://www.salesianos.br/unidade/colegio-salesiano-resende";
 const FACEBOOK_URL = "https://www.facebook.com/saleresende/?locale=pt_BR";
 const LINKEDIN_URL = "https://www.linkedin.com/in/salesiano-resende-colégio/";
+const DEFAULT_ASSET_BASE =
+  process.env.NEXT_PUBLIC_SIGNATURE_ASSET_BASE?.trim() ||
+  "https://signature-salesiano.vercel.app";
 
-export function buildSignatureHTML(data: SignatureData, base = ""): string {
-  const img = (path: string) => `${base}${path}`;
+export function buildSignatureHTML(
+  data: SignatureData,
+  base = DEFAULT_ASSET_BASE,
+): string {
+  const normalizedBase = base.trim().replace(/\/+$/, "");
+  const img = (path: string) => `${normalizedBase}${path}`;
   const emailAddr = data.email.trim() || EMAIL_FALLBACK;
 
   const directPhoneRow = data.phone.trim()
     ? `<tr>
         <td style="padding-bottom:5px;vertical-align:middle;">
-          <img src="${img("/assets/phone.svg")}" alt="" width="14" height="14"
-            style="display:inline-block;vertical-align:middle;margin-right:6px;" />
+          <img src="${img("/assets/phone.png")}" alt="" width="14" height="14"
+            style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
           <a href="tel:${sanitizePhone(data.phone)}"
             style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
             ${esc(data.phone)}
@@ -59,8 +66,8 @@ export function buildSignatureHTML(data: SignatureData, base = ""): string {
           ${directPhoneRow}
           <tr>
             <td style="padding-bottom:5px;vertical-align:middle;">
-              <img src="${img("/assets/mail.svg")}" alt="" width="14" height="14"
-                style="display:inline-block;vertical-align:middle;margin-right:6px;" />
+              <img src="${img("/assets/mail.png")}" alt="" width="14" height="14"
+                style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
               <a href="mailto:${emailAddr}"
                 style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
                 ${esc(emailAddr)}
@@ -69,8 +76,8 @@ export function buildSignatureHTML(data: SignatureData, base = ""): string {
           </tr>
           <tr>
             <td style="vertical-align:middle;">
-              <img src="${img("/assets/link.svg")}" alt="" width="14" height="14"
-                style="display:inline-block;vertical-align:middle;margin-right:6px;" />
+              <img src="${img("/assets/link.png")}" alt="" width="14" height="14"
+                style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" />
               <a href="${WEBSITE_URL}" target="_blank"
                 style="font-size:12px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
                 ${WEBSITE_LABEL}
@@ -103,17 +110,17 @@ export function buildSignatureHTML(data: SignatureData, base = ""): string {
             <td style="width:10px;">&nbsp;</td>
             <td style="vertical-align:middle;padding-right:6px;">
               <a href="${FACEBOOK_URL}" target="_blank">
-                <img src="${img("/assets/facebook.svg")}" alt="Facebook" width="22" height="22" style="display:block" />
+                <img src="${img("/assets/facebook.png")}" alt="Facebook" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
             <td style="vertical-align:middle;padding-right:6px;">
               <a href="https://www.instagram.com/salesianoresende" target="_blank">
-                <img src="${img("/assets/instagram.svg")}" alt="Instagram" width="22" height="22" style="display:block;" />
+                <img src="${img("/assets/instagram.png")}" alt="Instagram" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
             <td style="vertical-align:middle;">
               <a href="${LINKEDIN_URL}" target="_blank">
-                <img src="${img("/assets/linkedin.svg")}" alt="LinkedIn" width="22" height="22" style="display:block;" />
+                <img src="${img("/assets/linkedin.png")}" alt="LinkedIn" width="22" height="22" style="display:block;border:0;" />
               </a>
             </td>
           </tr>
