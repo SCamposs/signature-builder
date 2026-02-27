@@ -29,6 +29,8 @@ Projeto criado como MVP para padronizar assinaturas de email, permitindo que usu
 - Geração de assinatura HTML institucional
 - Preview em tempo real
 - Cópia da assinatura em formato `text/html`
+- Perfis salvos no navegador (localStorage) para reutilizar assinaturas
+- Importação e exportação de perfis em JSON (backup e migração)
 - Compatível com Gmail e Outlook
 - Layout responsivo
 - Estilo seguro para email (tabelas + estilos inline)

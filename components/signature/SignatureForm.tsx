@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,15 @@ interface FieldError {
   email?: string;
 }
 
+interface SavedProfile {
+  id: string;
+  label: string;
+  data: SignatureData;
+  updatedAt: string;
+}
+
+const STORAGE_KEY = "signature-salesiano:profiles";
+
 export function SignatureForm({ onGenerate }: SignatureFormProps) {
   const [form, setForm] = useState<SignatureData>({
     name: "",
@@ -29,6 +38,172 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
   });
 
   const [errors, setErrors] = useState<FieldError>({});
+  const [profiles, setProfiles] = useState<SavedProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [profileLabel, setProfileLabel] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored) as SavedProfile[];
+      if (!Array.isArray(parsed)) return;
+      setProfiles(parsed);
+    } catch {
+      setProfiles([]);
+    }
+  }, []);
+
+  function persistProfiles(nextProfiles: SavedProfile[]) {
+    setProfiles(nextProfiles);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfiles));
+  }
+
+  function showProfileMessage(message: string) {
+    setProfileMessage(message);
+    setTimeout(() => setProfileMessage(""), 3500);
+  }
+
+  function normalizeProfileLabel() {
+    const fromInput = profileLabel.trim();
+    if (fromInput) return fromInput;
+
+    const fromName = form.name.trim();
+    if (fromName) return fromName;
+
+    return "Perfil sem nome";
+  }
+
+  function handleSaveProfile() {
+    const label = normalizeProfileLabel();
+    const now = new Date().toISOString();
+
+    if (selectedProfileId) {
+      const nextProfiles = profiles.map((profile) =>
+        profile.id === selectedProfileId
+          ? { ...profile, label, data: form, updatedAt: now }
+          : profile,
+      );
+      persistProfiles(nextProfiles);
+      showProfileMessage("Perfil atualizado com sucesso.");
+      return;
+    }
+
+    const newProfile: SavedProfile = {
+      id: crypto.randomUUID(),
+      label,
+      data: form,
+      updatedAt: now,
+    };
+
+    const nextProfiles = [newProfile, ...profiles];
+    persistProfiles(nextProfiles);
+    setSelectedProfileId(newProfile.id);
+    setProfileLabel(newProfile.label);
+    showProfileMessage("Perfil salvo com sucesso.");
+  }
+
+  function handleApplyProfile() {
+    if (!selectedProfileId) return;
+
+    const profile = profiles.find((item) => item.id === selectedProfileId);
+    if (!profile) return;
+
+    setForm(profile.data);
+    setProfileLabel(profile.label);
+    setErrors({});
+    onGenerate(profile.data);
+    showProfileMessage("Perfil aplicado.");
+  }
+
+  function handleDeleteProfile() {
+    if (!selectedProfileId) return;
+
+    const nextProfiles = profiles.filter(
+      (profile) => profile.id !== selectedProfileId,
+    );
+
+    persistProfiles(nextProfiles);
+    setSelectedProfileId("");
+    setProfileLabel("");
+    showProfileMessage("Perfil excluído.");
+  }
+
+  function handleNewProfile() {
+    setSelectedProfileId("");
+    setProfileLabel("");
+    showProfileMessage("Pronto para um novo perfil.");
+  }
+
+  function handleProfileSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+    const nextId = e.target.value;
+    setSelectedProfileId(nextId);
+
+    const profile = profiles.find((item) => item.id === nextId);
+    setProfileLabel(profile?.label ?? "");
+  }
+
+  function handleExportProfiles() {
+    if (!profiles.length) {
+      showProfileMessage("Não há perfis para exportar.");
+      return;
+    }
+
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      profiles,
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `assinatura-perfis-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+
+    showProfileMessage("Perfis exportados.");
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportProfiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      const parsed = JSON.parse(content) as {
+        profiles?: SavedProfile[];
+      };
+
+      const importedProfiles = sanitizeImportedProfiles(parsed.profiles);
+      if (!importedProfiles.length) {
+        showProfileMessage("Arquivo sem perfis válidos.");
+        return;
+      }
+
+      const merged = mergeProfiles(profiles, importedProfiles);
+      persistProfiles(merged);
+      showProfileMessage(
+        `${importedProfiles.length} perfil(is) importado(s) com sucesso.`,
+      );
+    } catch {
+      showProfileMessage("Não foi possível importar o arquivo JSON.");
+    }
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -58,6 +233,87 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Perfis salvos
+        </p>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="savedProfile">Perfil</Label>
+          <select
+            id="savedProfile"
+            value={selectedProfileId}
+            onChange={handleProfileSelect}
+            className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+          >
+            <option value="">Selecione um perfil salvo</option>
+            {profiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {profile.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="profileLabel">Nome do perfil</Label>
+          <Input
+            id="profileLabel"
+            value={profileLabel}
+            onChange={(e) => setProfileLabel(e.target.value)}
+            placeholder="Ex: Ana Carolina- Coordenação"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            onClick={handleSaveProfile}
+            className="font-semibold bg-blue-900 hover:bg-blue-800 text-white hover:text-white"
+          >
+            Salvar perfil
+          </Button>
+          <Button type="button" variant="outline" onClick={handleApplyProfile}>
+            Aplicar perfil
+          </Button>
+          <Button type="button" variant="outline" onClick={handleNewProfile}>
+            Novo
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDeleteProfile}
+            disabled={!selectedProfileId}
+          >
+            Excluir
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExportProfiles}
+          >
+            Exportar JSON
+          </Button>
+          <Button type="button" variant="outline" onClick={handleImportClick}>
+            Importar JSON
+          </Button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          onChange={handleImportProfiles}
+          className="hidden"
+        />
+
+        {profileMessage && (
+          <p className="text-xs text-slate-500" aria-live="polite">
+            {profileMessage}
+          </p>
+        )}
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="name">
           Nome completo <span className="text-red-600">*</span>
@@ -194,5 +450,54 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
         Gerar assinatura
       </Button>
     </form>
+  );
+}
+
+function sanitizeImportedProfiles(
+  value: SavedProfile[] | undefined,
+): SavedProfile[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (profile) =>
+        typeof profile?.id === "string" &&
+        typeof profile?.label === "string" &&
+        typeof profile?.updatedAt === "string" &&
+        typeof profile?.data?.name === "string" &&
+        typeof profile?.data?.role === "string" &&
+        typeof profile?.data?.department === "string" &&
+        typeof profile?.data?.phone === "string" &&
+        typeof profile?.data?.email === "string" &&
+        typeof profile?.data?.facebookUrl === "string" &&
+        typeof profile?.data?.instagramUrl === "string" &&
+        typeof profile?.data?.linkedinUrl === "string",
+    )
+    .map((profile) => ({
+      id: profile.id,
+      label: profile.label.trim() || "Perfil sem nome",
+      updatedAt: profile.updatedAt,
+      data: profile.data,
+    }));
+}
+
+function mergeProfiles(
+  currentProfiles: SavedProfile[],
+  importedProfiles: SavedProfile[],
+): SavedProfile[] {
+  const map = new Map<string, SavedProfile>();
+
+  for (const profile of currentProfiles) {
+    map.set(profile.id, profile);
+  }
+
+  for (const profile of importedProfiles) {
+    map.set(profile.id, profile);
+  }
+
+  return Array.from(map.values()).sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
   );
 }
