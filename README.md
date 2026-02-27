@@ -24,14 +24,17 @@ Projeto criado como MVP para padronizar assinaturas de email, permitindo que usu
   - Nome
   - Cargo
   - Setor
-  - Telefone direto
-  - Email
+  - Telefone direto (com máscara automática)
+  - Email (validação aprimorada)
+  - Redes sociais opcionais (Facebook, Instagram, LinkedIn) com validação de URL
 - Geração de assinatura HTML institucional
 - Modelos de assinatura: padrão e compacto
 - Preview em tempo real
 - Cópia da assinatura em formato `text/html`
 - Perfis salvos no navegador (localStorage) para reutilizar assinaturas
 - Importação e exportação de perfis em JSON (backup e migração)
+- Validação em tempo real com feedback visual
+- Formatação automática de telefone brasileiro
 - Compatível com Gmail e Outlook
 - Layout responsivo
 - Estilo seguro para email (tabelas + estilos inline)

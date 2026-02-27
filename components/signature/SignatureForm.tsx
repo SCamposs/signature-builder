@@ -1,14 +1,28 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Loader2, Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   emptySignature,
   type SignatureData,
   type SignatureTemplate,
 } from "@/types/signature";
+import {
+  formatPhoneMask,
+  isValidEmail,
+  isValidPhone,
+  isValidUrl,
+} from "@/lib/input-masks";
 
 interface SignatureFormProps {
   onGenerate: (data: SignatureData) => void;
@@ -18,6 +32,10 @@ interface FieldError {
   name?: string;
   role?: string;
   email?: string;
+  phone?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
 }
 
 interface SavedProfile {
@@ -30,13 +48,35 @@ interface SavedProfile {
 const STORAGE_KEY = "signature-salesiano:profiles";
 
 export function SignatureForm({ onGenerate }: SignatureFormProps) {
-  const [form, setForm] = useState<SignatureData>(emptySignature);
+  const [form, setForm] = useState<SignatureData>(() => {
+    // Pré-preenche via parâmetro ?d= na URL (links compartilhados)
+    if (typeof window === "undefined") return emptySignature;
+    try {
+      const encoded = new URLSearchParams(window.location.search).get("d");
+      if (!encoded) return emptySignature;
+      const decoded = JSON.parse(atob(encoded)) as Partial<SignatureData>;
+      return {
+        ...emptySignature,
+        ...decoded,
+        template: decoded.template === "compact" ? "compact" : "standard",
+      };
+    } catch {
+      return emptySignature;
+    }
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [errors, setErrors] = useState<FieldError>({});
   const [profiles, setProfiles] = useState<SavedProfile[]>(loadProfiles);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [profileLabel, setProfileLabel] = useState("");
-  const [profileMessage, setProfileMessage] = useState("");
+  const [profileMessage, setProfileMessage] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).has("d")
+      ? "Formulário pré-preenchido via link compartilhado."
+      : "";
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function persistProfiles(nextProfiles: SavedProfile[]) {
@@ -120,12 +160,27 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
     showProfileMessage("Pronto para um novo perfil.");
   }
 
-  function handleProfileSelect(e: React.ChangeEvent<HTMLSelectElement>) {
-    const nextId = e.target.value;
+  function handleProfileSelect(nextId: string) {
     setSelectedProfileId(nextId);
 
     const profile = profiles.find((item) => item.id === nextId);
     setProfileLabel(profile?.label ?? "");
+  }
+
+  function handleTemplateChange(value: string) {
+    setForm((prev) => ({ ...prev, template: value as SignatureTemplate }));
+  }
+
+  async function handleShareLink() {
+    try {
+      const encoded = btoa(JSON.stringify(form));
+      const url = `${window.location.origin}${window.location.pathname}?d=${encoded}`;
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 3000);
+    } catch {
+      showProfileMessage("Não foi possível copiar o link.");
+    }
   }
 
   function handleExportProfiles() {
@@ -187,17 +242,17 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
     }
   }
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    setForm((prev) => {
-      if (name === "template") {
-        return { ...prev, template: value as SignatureTemplate };
-      }
 
-      return { ...prev, [name]: value };
-    });
+    let processedValue = value;
+
+    // Aplicar máscara de telefone
+    if (name === "phone") {
+      processedValue = formatPhoneMask(value);
+    }
+
+    setForm((prev) => ({ ...prev, [name]: processedValue }));
 
     if (errors[name as keyof FieldError]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -206,20 +261,50 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
   function validate(): boolean {
     const newErrors: FieldError = {};
-    if (!form.name.trim()) newErrors.name = "Nome é obrigatório.";
-    if (!form.role.trim()) newErrors.role = "Cargo é obrigatório.";
+
+    if (!form.name.trim()) {
+      newErrors.name = "Nome é obrigatório.";
+    }
+
+    if (!form.role.trim()) {
+      newErrors.role = "Cargo é obrigatório.";
+    }
+
     if (!form.email.trim()) {
       newErrors.email = "E-mail é obrigatório.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    } else if (!isValidEmail(form.email)) {
       newErrors.email = "Informe um e-mail válido.";
     }
+
+    if (form.phone.trim() && !isValidPhone(form.phone)) {
+      newErrors.phone = "Telefone inválido. Use (XX) XXXXX-XXXX";
+    }
+
+    if (form.facebookUrl.trim() && !isValidUrl(form.facebookUrl)) {
+      newErrors.facebookUrl = "URL inválida.";
+    }
+
+    if (form.instagramUrl.trim() && !isValidUrl(form.instagramUrl)) {
+      newErrors.instagramUrl = "URL inválida.";
+    }
+
+    if (form.linkedinUrl.trim() && !isValidUrl(form.linkedinUrl)) {
+      newErrors.linkedinUrl = "URL inválida.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (validate()) onGenerate(form);
+    if (!validate()) return;
+    setIsGenerating(true);
+    // Pequeno delay para renderizar o estado de loading antes da geração
+    setTimeout(() => {
+      onGenerate(form);
+      setIsGenerating(false);
+    }, 350);
   }
 
   return (
@@ -231,19 +316,18 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="savedProfile">Perfil</Label>
-          <select
-            id="savedProfile"
-            value={selectedProfileId}
-            onChange={handleProfileSelect}
-            className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-          >
-            <option value="">Selecione um perfil salvo</option>
-            {profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.label}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedProfileId} onValueChange={handleProfileSelect}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione um perfil salvo" />
+            </SelectTrigger>
+            <SelectContent>
+              {profiles.map((profile) => (
+                <SelectItem key={profile.id} value={profile.id}>
+                  {profile.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-1.5">
@@ -260,14 +344,24 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
           <Button
             type="button"
             onClick={handleSaveProfile}
-            className="font-semibold bg-blue-900 hover:bg-blue-800 text-white hover:text-white"
+            className="text-xs sm:text-sm font-semibold bg-blue-900 hover:bg-blue-800 text-white hover:text-white"
           >
             Salvar perfil
           </Button>
-          <Button type="button" variant="outline" onClick={handleApplyProfile}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleApplyProfile}
+            className="text-xs sm:text-sm"
+          >
             Aplicar perfil
           </Button>
-          <Button type="button" variant="outline" onClick={handleNewProfile}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleNewProfile}
+            className="text-xs sm:text-sm"
+          >
             Novo
           </Button>
           <Button
@@ -275,6 +369,7 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
             variant="outline"
             onClick={handleDeleteProfile}
             disabled={!selectedProfileId}
+            className="text-xs sm:text-sm"
           >
             Excluir
           </Button>
@@ -282,11 +377,33 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
             type="button"
             variant="outline"
             onClick={handleExportProfiles}
+            className="text-xs sm:text-sm"
           >
             Exportar JSON
           </Button>
-          <Button type="button" variant="outline" onClick={handleImportClick}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleImportClick}
+            className="text-xs sm:text-sm"
+          >
             Importar JSON
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleShareLink}
+            className="col-span-2 gap-2"
+          >
+            {linkCopied ? (
+              <>
+                <Check className="h-3.5 w-3.5" /> Link copiado!
+              </>
+            ) : (
+              <>
+                <Link2 className="h-3.5 w-3.5" /> Compartilhar pré-preenchimento
+              </>
+            )}
           </Button>
         </div>
 
@@ -307,16 +424,15 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
       <div className="space-y-1.5">
         <Label htmlFor="template">Modelo da assinatura</Label>
-        <select
-          id="template"
-          name="template"
-          value={form.template}
-          onChange={handleChange}
-          className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-        >
-          <option value="standard">Padrão (completo)</option>
-          <option value="compact">Compacto (mais curto)</option>
-        </select>
+        <Select value={form.template} onValueChange={handleTemplateChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="standard">Padrão (completo)</SelectItem>
+            <SelectItem value="compact">Compacto (mais curto)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">
@@ -385,7 +501,17 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
           onChange={handleChange}
           placeholder="Ex: (24) 3355-1389"
           type="tel"
+          aria-describedby={errors.phone ? "phone-error" : undefined}
+          aria-invalid={!!errors.phone}
+          className={
+            errors.phone ? "border-red-500 focus-visible:ring-red-400" : ""
+          }
         />
+        {errors.phone && (
+          <p id="phone-error" className="text-xs text-red-600">
+            {errors.phone}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -421,7 +547,21 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
           onChange={handleChange}
           placeholder="Ex: https://facebook.com/seu.perfil"
           type="url"
+          aria-describedby={
+            errors.facebookUrl ? "facebookUrl-error" : undefined
+          }
+          aria-invalid={!!errors.facebookUrl}
+          className={
+            errors.facebookUrl
+              ? "border-red-500 focus-visible:ring-red-400"
+              : ""
+          }
         />
+        {errors.facebookUrl && (
+          <p id="facebookUrl-error" className="text-xs text-red-600">
+            {errors.facebookUrl}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -433,7 +573,21 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
           onChange={handleChange}
           placeholder="Ex: https://instagram.com/seu.perfil"
           type="url"
+          aria-describedby={
+            errors.instagramUrl ? "instagramUrl-error" : undefined
+          }
+          aria-invalid={!!errors.instagramUrl}
+          className={
+            errors.instagramUrl
+              ? "border-red-500 focus-visible:ring-red-400"
+              : ""
+          }
         />
+        {errors.instagramUrl && (
+          <p id="instagramUrl-error" className="text-xs text-red-600">
+            {errors.instagramUrl}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -445,14 +599,35 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
           onChange={handleChange}
           placeholder="Ex: https://linkedin.com/in/seu-perfil"
           type="url"
+          aria-describedby={
+            errors.linkedinUrl ? "linkedinUrl-error" : undefined
+          }
+          aria-invalid={!!errors.linkedinUrl}
+          className={
+            errors.linkedinUrl
+              ? "border-red-500 focus-visible:ring-red-400"
+              : ""
+          }
         />
+        {errors.linkedinUrl && (
+          <p id="linkedinUrl-error" className="text-xs text-red-600">
+            {errors.linkedinUrl}
+          </p>
+        )}
       </div>
 
       <Button
         type="submit"
-        className="w-full font-semibold bg-blue-900 hover:bg-blue-800 cursor-pointer text-white hover:text-white"
+        disabled={isGenerating}
+        className="w-full font-semibold bg-blue-900 hover:bg-blue-800 cursor-pointer text-white hover:text-white disabled:opacity-75"
       >
-        Gerar assinatura
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...
+          </>
+        ) : (
+          "Gerar assinatura"
+        )}
       </Button>
     </form>
   );
