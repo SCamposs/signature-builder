@@ -1,4 +1,7 @@
+export type SignatureTemplate = "standard" | "compact";
+
 export interface SignatureData {
+  template: SignatureTemplate;
   name: string;
   role: string;
   department: string;
@@ -10,6 +13,7 @@ export interface SignatureData {
 }
 
 export const emptySignature: SignatureData = {
+  template: "standard",
   name: "",
   role: "",
   department: "",

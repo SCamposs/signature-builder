@@ -1,4 +1,4 @@
-import type { SignatureData } from "@/types/signature";
+import type { SignatureData, SignatureTemplate } from "@/types/signature";
 
 // --- Identidade visual -----------------------------------------------------
 export const BLUE = "#003087"; // Pantone Blue 072C (aproximacao)
@@ -23,6 +23,8 @@ export function buildSignatureHTML(
 ): string {
   const normalizedBase = base.trim().replace(/\/+$/, "");
   const img = (path: string) => `${normalizedBase}${path}`;
+  const template: SignatureTemplate =
+    data.template === "compact" ? "compact" : "standard";
   const emailAddr = data.email.trim() || EMAIL_FALLBACK;
   const facebookUrl = normalizeUrl(data.facebookUrl, FACEBOOK_URL);
   const instagramUrl = normalizeUrl(data.instagramUrl, INSTAGRAM_URL);
@@ -46,6 +48,91 @@ export function buildSignatureHTML(
         </td>
       </tr>`
     : "";
+
+  if (template === "compact") {
+    return `
+<table cellpadding="0" cellspacing="0" border="0" width="540"
+  style="font-family:Arial,Helvetica,sans-serif;width:540px;border-collapse:collapse;">
+  <tbody>
+    <tr>
+      <td style="vertical-align:top;padding-right:12px;">
+        <table cellpadding="0" cellspacing="0" border="0"><tbody>
+          <tr>
+            <td style="font-size:16px;font-weight:700;color:${BLUE};padding-bottom:2px;font-family:Arial,Helvetica,sans-serif;">
+              ${esc(data.name)}
+            </td>
+          </tr>
+          ${data.role.trim() ? `<tr><td style="font-size:12px;color:#333333;padding-bottom:1px;font-family:Arial,Helvetica,sans-serif;">${esc(data.role)}</td></tr>` : ""}
+          ${data.department.trim() ? `<tr><td style="font-size:11px;color:#555555;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;padding-bottom:3px;font-family:Arial,Helvetica,sans-serif;">${esc(data.department)}</td></tr>` : ""}
+          <tr>
+            <td style="font-size:10px;color:#888888;padding-top:2px;font-family:Arial,Helvetica,sans-serif;">
+              ${INSTITUTION}
+            </td>
+          </tr>
+        </tbody></table>
+      </td>
+      <td style="width:1px;background-color:${BLUE};opacity:0.12">&nbsp;</td>
+      <td style="width:12px;">&nbsp;</td>
+      <td style="vertical-align:top;padding-right:12px;">
+        <table cellpadding="0" cellspacing="0" border="0"><tbody>
+          ${directPhoneRow}
+          <tr>
+            <td style="padding-bottom:4px;">
+              <table cellpadding="0" cellspacing="0" border="0"><tbody><tr>
+                <td style="vertical-align:middle;padding-right:6px;line-height:0;">
+                  <img src="${img("/assets/mail.png")}" alt="" width="13" height="13" style="display:block;border:0;" />
+                </td>
+                <td style="vertical-align:middle;white-space:nowrap;">
+                  <a href="mailto:${emailAddr}" style="font-size:11px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;line-height:1.2;display:inline-block;white-space:nowrap;">
+                    ${esc(emailAddr)}
+                  </a>
+                </td>
+              </tr></tbody></table>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:middle;">
+              <table cellpadding="0" cellspacing="0" border="0"><tbody><tr>
+                <td style="vertical-align:top;padding-right:6px;line-height:0;padding-top:1px;">
+                  <img src="${img("/assets/link.png")}" alt="" width="13" height="13" style="display:block;border:0;" />
+                </td>
+                <td style="vertical-align:top;">
+                  <a href="${WEBSITE_URL}" target="_blank" style="font-size:11px;color:#222222;text-decoration:none;font-family:Arial,Helvetica,sans-serif;line-height:1.2;display:inline-block;">
+                    ${WEBSITE_LABEL}
+                  </a>
+                </td>
+              </tr></tbody></table>
+            </td>
+          </tr>
+        </tbody></table>
+      </td>
+      <td style="vertical-align:middle;">
+        <a href="${WEBSITE_URL}" target="_blank">
+          <img src="${img("/assets/logo-salesiano-resende.png")}" alt="${INSTITUTION}" width="72" style="display:block;border:0;" />
+        </a>
+      </td>
+    </tr>
+    <tr><td colspan="5" style="height:8px;font-size:0;line-height:0;"></td></tr>
+    <tr>
+      <td colspan="5" style="height:1px;background-color:${BLUE};font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="5" style="padding-top:6px;">
+        <table cellpadding="0" cellspacing="0" border="0"><tbody><tr>
+          <td style="vertical-align:middle;padding-right:8px;">
+            <img src="${img("/assets/logo-arco-s.png")}" alt="S Salesiano" height="22" style="display:block;border:0;" />
+          </td>
+          <td style="width:1px;background-color:${BLUE};opacity:0.12;">&nbsp;</td>
+          <td style="width:8px;">&nbsp;</td>
+          <td style="vertical-align:middle;padding-right:5px;"><a href="${facebookUrl}" target="_blank"><img src="${img("/assets/facebook.png")}" alt="Facebook" width="20" height="20" style="display:block;border:0;" /></a></td>
+          <td style="vertical-align:middle;padding-right:5px;"><a href="${instagramUrl}" target="_blank"><img src="${img("/assets/instagram.png")}" alt="Instagram" width="20" height="20" style="display:block;border:0;" /></a></td>
+          <td style="vertical-align:middle;"><a href="${linkedinUrl}" target="_blank"><img src="${img("/assets/linkedin.png")}" alt="LinkedIn" width="20" height="20" style="display:block;border:0;" /></a></td>
+        </tr></tbody></table>
+      </td>
+    </tr>
+  </tbody>
+</table>`.trim();
+  }
 
   return `
 <table cellpadding="0" cellspacing="0" border="0" width="580"

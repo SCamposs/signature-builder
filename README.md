@@ -27,6 +27,7 @@ Projeto criado como MVP para padronizar assinaturas de email, permitindo que usu
   - Telefone direto
   - Email
 - Geração de assinatura HTML institucional
+- Modelos de assinatura: padrão e compacto
 - Preview em tempo real
 - Cópia da assinatura em formato `text/html`
 - Perfis salvos no navegador (localStorage) para reutilizar assinaturas

@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { SignatureData } from "@/types/signature";
+import {
+  emptySignature,
+  type SignatureData,
+  type SignatureTemplate,
+} from "@/types/signature";
 
 interface SignatureFormProps {
   onGenerate: (data: SignatureData) => void;
@@ -26,36 +30,14 @@ interface SavedProfile {
 const STORAGE_KEY = "signature-salesiano:profiles";
 
 export function SignatureForm({ onGenerate }: SignatureFormProps) {
-  const [form, setForm] = useState<SignatureData>({
-    name: "",
-    role: "",
-    department: "",
-    phone: "",
-    email: "",
-    facebookUrl: "",
-    instagramUrl: "",
-    linkedinUrl: "",
-  });
+  const [form, setForm] = useState<SignatureData>(emptySignature);
 
   const [errors, setErrors] = useState<FieldError>({});
-  const [profiles, setProfiles] = useState<SavedProfile[]>([]);
+  const [profiles, setProfiles] = useState<SavedProfile[]>(loadProfiles);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [profileLabel, setProfileLabel] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
-
-      const parsed = JSON.parse(stored) as SavedProfile[];
-      if (!Array.isArray(parsed)) return;
-      setProfiles(parsed);
-    } catch {
-      setProfiles([]);
-    }
-  }, []);
 
   function persistProfiles(nextProfiles: SavedProfile[]) {
     setProfiles(nextProfiles);
@@ -205,9 +187,18 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      if (name === "template") {
+        return { ...prev, template: value as SignatureTemplate };
+      }
+
+      return { ...prev, [name]: value };
+    });
+
     if (errors[name as keyof FieldError]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -312,6 +303,20 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
             {profileMessage}
           </p>
         )}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="template">Modelo da assinatura</Label>
+        <select
+          id="template"
+          name="template"
+          value={form.template}
+          onChange={handleChange}
+          className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+        >
+          <option value="standard">Padrão (completo)</option>
+          <option value="compact">Compacto (mais curto)</option>
+        </select>
       </div>
 
       <div className="space-y-1.5">
@@ -479,8 +484,64 @@ function sanitizeImportedProfiles(
       id: profile.id,
       label: profile.label.trim() || "Perfil sem nome",
       updatedAt: profile.updatedAt,
-      data: profile.data,
+      data: ensureSignatureData(profile.data),
     }));
+}
+
+function sanitizeStoredProfiles(value: unknown[]): SavedProfile[] {
+  return value
+    .filter(
+      (profile) =>
+        typeof profile === "object" &&
+        profile !== null &&
+        "id" in profile &&
+        "label" in profile &&
+        "updatedAt" in profile &&
+        "data" in profile,
+    )
+    .map((profile) => profile as SavedProfile)
+    .filter(
+      (profile) =>
+        typeof profile.id === "string" &&
+        typeof profile.label === "string" &&
+        typeof profile.updatedAt === "string",
+    )
+    .map((profile) => ({
+      id: profile.id,
+      label: profile.label.trim() || "Perfil sem nome",
+      updatedAt: profile.updatedAt,
+      data: ensureSignatureData(profile.data),
+    }));
+}
+
+function ensureSignatureData(data: SignatureData): SignatureData {
+  return {
+    ...emptySignature,
+    ...data,
+    template: data?.template === "compact" ? "compact" : "standard",
+  };
+}
+
+function loadProfiles(): SavedProfile[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+      return [];
+    }
+
+    const parsed = JSON.parse(stored) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return sanitizeStoredProfiles(parsed);
+  } catch {
+    return [];
+  }
 }
 
 function mergeProfiles(
