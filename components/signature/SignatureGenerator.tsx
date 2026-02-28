@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, Suspense } from "react";
 import { LayoutTemplate, TableProperties } from "lucide-react";
 import { SignatureForm } from "@/components/signature/SignatureForm";
 import { SignaturePreview } from "@/components/signature/SignaturePreview";
@@ -13,6 +13,22 @@ export function SignatureGenerator() {
   const [signatureData, setSignatureData] = useState<SignatureData | null>(
     null,
   );
+  const [liveData, setLiveData] = useState<SignatureData | null>(null);
+
+  // Callback estável para não re-disparar o debounce desnecessariamente
+  const handleFormChange = useCallback((data: SignatureData) => {
+    setLiveData(data);
+  }, []);
+
+  // Ao gerar explicitamente, limpa o estado "ao vivo" pois a origem é a mesma
+  function handleGenerate(data: SignatureData) {
+    setSignatureData(data);
+    setLiveData(null);
+  }
+
+  // preview = dado gerado explicitamente, ou preview ao vivo enquanto apenas digitando
+  const previewData = signatureData ?? liveData;
+  const isLive = signatureData === null && liveData !== null;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -42,14 +58,16 @@ export function SignatureGenerator() {
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Seus dados
               </h2>
-              <SignatureForm onGenerate={setSignatureData} />
+              <Suspense fallback={<div className="h-48 animate-pulse rounded-lg bg-slate-100" />}>
+                <SignatureForm onGenerate={handleGenerate} onFormChange={handleFormChange} />
+              </Suspense>
             </Card>
 
             <Card className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Preview &amp; Cópia
               </h2>
-              <SignaturePreview data={signatureData} />
+              <SignaturePreview data={previewData} isLive={isLive} />
             </Card>
           </div>
 

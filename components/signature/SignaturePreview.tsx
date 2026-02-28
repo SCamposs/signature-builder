@@ -2,13 +2,14 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, Maximize, FlaskConical } from "lucide-react";
+import { CheckCircle, Copy, Maximize, FlaskConical, Zap } from "lucide-react";
 import type { SignatureData } from "@/types/signature";
 import { buildSignatureHTML } from "@/lib/signature-builder";
 import { InstallGuide } from "@/components/signature/InstallGuide";
 
 interface SignaturePreviewProps {
   data: SignatureData | null;
+  isLive?: boolean;
 }
 
 const EXAMPLE_DATA: SignatureData = {
@@ -23,7 +24,7 @@ const EXAMPLE_DATA: SignatureData = {
   linkedinUrl: "",
 };
 
-export function SignaturePreview({ data }: SignaturePreviewProps) {
+export function SignaturePreview({ data, isLive = false }: SignaturePreviewProps) {
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isExample = data === null;
@@ -125,10 +126,22 @@ ${html}
         </div>
       )}
 
+      {/* Badge de live preview */}
+      {isLive && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+          <Zap className="h-3.5 w-3.5 shrink-0" />
+          <span>
+            <strong>Preview ao vivo.</strong> Clique em{" "}
+            <strong>Gerar assinatura</strong> para confirmar e habilitar a
+            cópia.
+          </span>
+        </div>
+      )}
+
       {/* Área de preview */}
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-          {isExample ? "Exemplo de assinatura" : "Preview da assinatura"}
+          {isExample ? "Exemplo de assinatura" : isLive ? "Preview ao vivo" : "Preview da assinatura"}
         </p>
         {/* iFrame para renderizar exatamente como será copiado */}
         <iframe
@@ -139,8 +152,8 @@ ${html}
         />
       </div>
 
-      {/* Botões de ação — só aparecem com assinatura real */}
-      {!isExample && (
+      {/* Botões de ação — só aparecem com assinatura confirmada (não live, não exemplo) */}
+      {!isExample && !isLive && (
         <>
           <div className="grid grid-cols-2 gap-3">
             {/* Botão copiar */}

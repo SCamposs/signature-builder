@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import {
 
 interface SignatureFormProps {
   onGenerate: (data: SignatureData) => void;
+  onFormChange?: (data: SignatureData) => void;
 }
 
 interface FieldError {
@@ -47,19 +49,20 @@ interface SavedProfile {
 
 const STORAGE_KEY = "signature-salesiano:profiles";
 
-export function SignatureForm({ onGenerate }: SignatureFormProps) {
+export function SignatureForm({ onGenerate, onFormChange }: SignatureFormProps) {
+  const searchParams = useSearchParams();
+  const encodedParam = searchParams.get("d");
+
+  // Inicializador preguiçoso: roda apenas uma vez no mount
   const [form, setForm] = useState<SignatureData>(() => {
-    // Pré-preenche via parâmetro ?d= na URL (links compartilhados)
-    if (typeof window === "undefined") return emptySignature;
+    if (!encodedParam) return emptySignature;
     try {
-      const encoded = new URLSearchParams(window.location.search).get("d");
-      if (!encoded) return emptySignature;
-      const decoded = JSON.parse(atob(encoded)) as Partial<SignatureData>;
+      const decoded = JSON.parse(atob(encodedParam)) as Partial<SignatureData>;
       return {
         ...emptySignature,
         ...decoded,
         template: decoded.template === "compact" ? "compact" : "standard",
-      };
+      } as SignatureData;
     } catch {
       return emptySignature;
     }
@@ -70,13 +73,17 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
   const [profiles, setProfiles] = useState<SavedProfile[]>(loadProfiles);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [profileLabel, setProfileLabel] = useState("");
-  const [profileMessage, setProfileMessage] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    return new URLSearchParams(window.location.search).has("d")
-      ? "Formulário pré-preenchido via link compartilhado."
-      : "";
-  });
+  const [profileMessage, setProfileMessage] = useState<string>(
+    encodedParam ? "Formulário pré-preenchido via link compartilhado." : "",
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Live preview: notifica o componente pai após 450ms de inatividade
+  useEffect(() => {
+    if (!onFormChange) return;
+    const timer = setTimeout(() => onFormChange(form), 450);
+    return () => clearTimeout(timer);
+  }, [form, onFormChange]);
 
   function persistProfiles(nextProfiles: SavedProfile[]) {
     setProfiles(nextProfiles);
