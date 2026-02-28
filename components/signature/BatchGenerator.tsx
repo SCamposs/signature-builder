@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import JSZip from "jszip";
 import {
   AlertCircle,
   CheckCircle2,
@@ -8,6 +9,7 @@ import {
   Eye,
   FileDown,
   Loader2,
+  PackageCheck,
   TableProperties,
   UploadCloud,
   X,
@@ -23,6 +25,12 @@ interface CsvRow {
   raw: string;
   data: SignatureData;
   errors: string[];
+}
+
+interface BatchReport {
+  generated: number;
+  ignored: CsvRow[];
+  zipFilename: string;
 }
 
 // ─── CSV template ─────────────────────────────────────────────────────────────
@@ -51,13 +59,18 @@ function parseCsv(raw: string): CsvRow[] {
     .filter(Boolean);
 
   // Skip header if present
-  const dataLines = lines.filter(
-    (l) => !l.toLowerCase().startsWith("nome,"),
-  );
+  const dataLines = lines.filter((l) => !l.toLowerCase().startsWith("nome,"));
 
   return dataLines.map((line, i) => {
     const cols = line.split(",").map((c) => c.trim());
-    const [name = "", role = "", department = "", phone = "", email = "", tpl = ""] = cols;
+    const [
+      name = "",
+      role = "",
+      department = "",
+      phone = "",
+      email = "",
+      tpl = "",
+    ] = cols;
 
     const errors: string[] = [];
     if (!name) errors.push("Nome obrigatório");
@@ -118,6 +131,7 @@ export function BatchGenerator() {
   const [downloading, setDownloading] = useState(false);
   const [downloadedCount, setDownloadedCount] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [report, setReport] = useState<BatchReport | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,6 +141,7 @@ export function BatchGenerator() {
 
   function handleCsvChange(text: string) {
     setCsvText(text);
+    setReport(null);
     if (!text.trim()) {
       setRows([]);
       setPreviewRow(null);
@@ -154,25 +169,50 @@ export function BatchGenerator() {
   }
 
   function handleDownloadTemplate() {
-    downloadFile("modelo-assinaturas.csv", CSV_EXAMPLE, "text/csv;charset=utf-8");
+    downloadFile(
+      "modelo-assinaturas.csv",
+      CSV_EXAMPLE,
+      "text/csv;charset=utf-8",
+    );
   }
 
-  async function handleDownloadAll() {
+  async function handleDownloadZip() {
     if (!validRows.length) return;
     setDownloading(true);
     setDownloadedCount(0);
+    setReport(null);
+
+    const zip = new JSZip();
+    const date = new Date().toISOString().slice(0, 10);
+    const folder = zip.folder(`assinaturas-${date}`)!;
 
     for (let i = 0; i < validRows.length; i++) {
       const row = validRows[i];
       const html = buildSignatureHTML(row.data);
-      const filename = `assinatura-${slugify(row.data.name) || `colaborador-${row.index}`}.html`;
-      downloadFile(filename, wrapHtml(html), "text/html;charset=utf-8");
+      const filename = `${slugify(row.data.name) || `colaborador-${row.index}`}.html`;
+      folder.file(filename, wrapHtml(html));
       setDownloadedCount(i + 1);
-      // Small pause so the browser can actually trigger each download
-      await new Promise((r) => setTimeout(r, 200));
+      // yield to React so progress updates render
+      await new Promise((r) => setTimeout(r, 0));
     }
 
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const zipFilename = `assinaturas-${date}.zip`;
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = zipFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
     setDownloading(false);
+    setReport({
+      generated: validRows.length,
+      ignored: invalidRows,
+      zipFilename,
+    });
   }
 
   function handleLoadExample() {
@@ -220,9 +260,9 @@ export function BatchGenerator() {
         <div>
           <p className="font-semibold">Geração em lote via CSV</p>
           <p className="mt-0.5 text-blue-600">
-            Cole uma planilha CSV com os dados dos colaboradores e baixe todas as
-            assinaturas em arquivos HTML individuais, prontos para uso no Gmail
-            ou Outlook.
+            Cole uma planilha CSV com os dados dos colaboradores e baixe todas
+            as assinaturas em arquivos HTML individuais, prontos para uso no
+            Gmail ou Outlook.
           </p>
         </div>
       </div>
@@ -294,15 +334,15 @@ export function BatchGenerator() {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`relative rounded-md transition-colors ${
-            isDragging
-              ? "ring-2 ring-blue-500 bg-blue-50"
-              : ""
+            isDragging ? "ring-2 ring-blue-500 bg-blue-50" : ""
           }`}
         >
           {isDragging && (
             <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md bg-blue-50/90">
               <UploadCloud className="h-8 w-8 text-blue-500" />
-              <p className="text-sm font-medium text-blue-600">Solte o arquivo aqui</p>
+              <p className="text-sm font-medium text-blue-600">
+                Solte o arquivo aqui
+              </p>
             </div>
           )}
           <textarea
@@ -340,8 +380,12 @@ export function BatchGenerator() {
               <tr>
                 <th className="px-3 py-2 font-semibold w-8">#</th>
                 <th className="px-3 py-2 font-semibold">Nome</th>
-                <th className="px-3 py-2 font-semibold hidden sm:table-cell">Cargo</th>
-                <th className="px-3 py-2 font-semibold hidden md:table-cell">E-mail</th>
+                <th className="px-3 py-2 font-semibold hidden sm:table-cell">
+                  Cargo
+                </th>
+                <th className="px-3 py-2 font-semibold hidden md:table-cell">
+                  E-mail
+                </th>
                 <th className="px-3 py-2 font-semibold">Status</th>
                 <th className="px-3 py-2 font-semibold">Ações</th>
               </tr>
@@ -431,33 +475,78 @@ export function BatchGenerator() {
         </div>
       )}
 
-      {/* Ação principal: baixar todas */}
+      {/* Relatório pós-lote */}
+      {report && (
+        <div className="rounded-xl border border-green-200 bg-green-50 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <PackageCheck className="h-5 w-5 text-green-600 shrink-0" />
+            <p className="text-sm font-semibold text-green-800">
+              ZIP gerado:{" "}
+              <code className="font-mono text-xs">{report.zipFilename}</code>
+            </p>
+          </div>
+          <ul className="text-xs text-green-700 space-y-0.5 pl-1">
+            <li>
+              • <strong>{report.generated}</strong> assinatura
+              {report.generated !== 1 ? "s" : ""} gerada
+              {report.generated !== 1 ? "s" : ""} com sucesso
+            </li>
+            <li>
+              • <strong>{report.ignored.length}</strong> linha
+              {report.ignored.length !== 1 ? "s" : ""} ignorada
+              {report.ignored.length !== 1 ? "s" : ""} por erro
+            </li>
+          </ul>
+          {report.ignored.length > 0 && (
+            <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-xs font-semibold text-amber-700 mb-1">
+                Linhas ignoradas:
+              </p>
+              <ul className="text-xs text-amber-600 space-y-0.5">
+                {report.ignored.map((r) => (
+                  <li key={r.index}>
+                    Linha {r.index}
+                    {r.data.name ? ` (${r.data.name})` : ""} —{" "}
+                    {r.errors.join(", ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Ação principal: baixar ZIP */}
       {validRows.length > 0 && (
         <div className="flex flex-col gap-2">
           <Button
             type="button"
             disabled={downloading}
-            onClick={handleDownloadAll}
+            onClick={handleDownloadZip}
             className="w-full gap-2 font-semibold bg-blue-900 hover:bg-blue-800 text-white hover:text-white disabled:opacity-75"
           >
             {downloading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Baixando… {downloadedCount}/{validRows.length}
+                Gerando ZIP… {downloadedCount}/{validRows.length}
               </>
             ) : (
               <>
                 <Download className="h-4 w-4" />
                 Baixar {validRows.length} assinatura
-                {validRows.length !== 1 ? "s" : ""} (.html)
+                {validRows.length !== 1 ? "s" : ""} em .zip
               </>
             )}
           </Button>
           {invalidRows.length > 0 && (
             <p className="text-center text-xs text-amber-600">
-              {invalidRows.length} linha(s) com erro serão ignoradas no download.
+              {invalidRows.length} linha(s) com erro serão ignoradas.
             </p>
           )}
+          <p className="text-center text-[11px] text-slate-400">
+            Assinaturas geradas em HTML compatível com Outlook, Gmail e Apple
+            Mail. Arquivos nomeados por colaborador.
+          </p>
         </div>
       )}
     </div>

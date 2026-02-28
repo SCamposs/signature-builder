@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Copy, Maximize, FlaskConical } from "lucide-react";
 import type { SignatureData } from "@/types/signature";
 import { buildSignatureHTML } from "@/lib/signature-builder";
+import { InstallGuide } from "@/components/signature/InstallGuide";
 
 interface SignaturePreviewProps {
   data: SignatureData | null;
@@ -181,6 +182,9 @@ ${html}
             Cole diretamente no campo de assinatura do Gmail, Outlook ou
             Thunderbird.
           </p>
+
+          {/* Guia de instalação */}
+          <InstallGuide data={displayData} />
         </>
       )}
     </div>
