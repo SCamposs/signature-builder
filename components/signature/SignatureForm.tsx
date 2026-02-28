@@ -28,6 +28,8 @@ import {
 interface SignatureFormProps {
   onGenerate: (data: SignatureData) => void;
   onFormChange?: (data: SignatureData) => void;
+  /** Quando alterado, carrega o perfil com esse id no formulário */
+  loadProfileRequest?: { profileId: string; key: number } | null;
 }
 
 interface FieldError {
@@ -49,7 +51,11 @@ interface SavedProfile {
 
 const STORAGE_KEY = "signature-salesiano:profiles";
 
-export function SignatureForm({ onGenerate, onFormChange }: SignatureFormProps) {
+export function SignatureForm({
+  onGenerate,
+  onFormChange,
+  loadProfileRequest,
+}: SignatureFormProps) {
   const searchParams = useSearchParams();
   const encodedParam = searchParams.get("d");
 
@@ -84,6 +90,22 @@ export function SignatureForm({ onGenerate, onFormChange }: SignatureFormProps) 
     const timer = setTimeout(() => onFormChange(form), 450);
     return () => clearTimeout(timer);
   }, [form, onFormChange]);
+
+  // Carregamento externo de perfil (vindo do dashboard "Equipe")
+  useEffect(() => {
+    if (!loadProfileRequest) return;
+    const fresh = loadProfiles();
+    const profile = fresh.find((p) => p.id === loadProfileRequest.profileId);
+    if (!profile) return;
+    setProfiles(fresh);
+    setForm(profile.data);
+    setSelectedProfileId(profile.id);
+    setProfileLabel(profile.label);
+    setErrors({});
+    onGenerate(profile.data);
+    showProfileMessage(`Perfil "${profile.label}" carregado do diretório.`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadProfileRequest?.key]);
 
   function persistProfiles(nextProfiles: SavedProfile[]) {
     setProfiles(nextProfiles);

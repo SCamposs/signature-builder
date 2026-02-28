@@ -24,7 +24,10 @@ const EXAMPLE_DATA: SignatureData = {
   linkedinUrl: "",
 };
 
-export function SignaturePreview({ data, isLive = false }: SignaturePreviewProps) {
+export function SignaturePreview({
+  data,
+  isLive = false,
+}: SignaturePreviewProps) {
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isExample = data === null;
@@ -141,7 +144,11 @@ ${html}
       {/* Área de preview */}
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-          {isExample ? "Exemplo de assinatura" : isLive ? "Preview ao vivo" : "Preview da assinatura"}
+          {isExample
+            ? "Exemplo de assinatura"
+            : isLive
+              ? "Preview ao vivo"
+              : "Preview da assinatura"}
         </p>
         {/* iFrame para renderizar exatamente como será copiado */}
         <iframe
