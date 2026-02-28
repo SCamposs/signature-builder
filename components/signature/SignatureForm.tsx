@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, Link2, Check } from "lucide-react";
+import { Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +64,6 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
       return emptySignature;
     }
   });
-  const [isGenerating, setIsGenerating] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const [errors, setErrors] = useState<FieldError>({});
@@ -298,13 +297,7 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
-    setIsGenerating(true);
-    // Pequeno delay para renderizar o estado de loading antes da geração
-    setTimeout(() => {
-      onGenerate(form);
-      setIsGenerating(false);
-    }, 350);
+    if (validate()) onGenerate(form);
   }
 
   return (
@@ -618,16 +611,9 @@ export function SignatureForm({ onGenerate }: SignatureFormProps) {
 
       <Button
         type="submit"
-        disabled={isGenerating}
-        className="w-full font-semibold bg-blue-900 hover:bg-blue-800 cursor-pointer text-white hover:text-white disabled:opacity-75"
+        className="w-full font-semibold bg-blue-900 hover:bg-blue-800 cursor-pointer text-white hover:text-white"
       >
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...
-          </>
-        ) : (
-          "Gerar assinatura"
-        )}
+        Gerar assinatura
       </Button>
     </form>
   );
