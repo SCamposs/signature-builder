@@ -49,7 +49,7 @@ interface SavedProfile {
   updatedAt: string;
 }
 
-const STORAGE_KEY = "signature-salesiano:profiles";
+const STORAGE_KEY = "signature-builder-v1:profiles";
 
 export function SignatureForm({
   onGenerate,

@@ -189,7 +189,7 @@ function printGuide(data: SignatureData, clientId: string) {
   </ul>
 
   <div class="footer">
-    Gerado em ${new Date().toLocaleDateString("pt-BR", { dateStyle: "long" })} · signature-salesiano.vercel.app
+    Gerado em ${new Date().toLocaleDateString("pt-BR", { dateStyle: "long" })} · signature-builder-v1.vercel.app
   </div>
 </body>
 </html>`);

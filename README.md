@@ -1,4 +1,4 @@
-# Signature Salesiano – Email Signature Builder
+# Signature Builder – Email Signature Builder
 
 Gerador de assinatura de email institucional para o Instituto São José Salesiano – Resende.
 
@@ -50,7 +50,7 @@ Projeto criado como MVP para padronizar assinaturas de email, permitindo que usu
 ## Como rodar o projeto
 
 ```bash
-cd signature-salesiano
+cd signature-builder
 npm install
 npm run dev
 
@@ -59,13 +59,13 @@ npm run dev
 
 ## Assets para email (Outlook)
 
-- A assinatura gerada usa URLs absolutas para imagens por padrão: `https://signature-salesiano.vercel.app`
+- A assinatura gerada usa URLs absolutas para imagens por padrão: `https://signature-builder-v1.vercel.app`
 - Para trocar o domínio dos assets, configure `NEXT_PUBLIC_SIGNATURE_ASSET_BASE`
 
 Exemplo em `.env.local`:
 
 ```bash
-NEXT_PUBLIC_SIGNATURE_ASSET_BASE=https://signature-salesiano.vercel.app
+NEXT_PUBLIC_SIGNATURE_ASSET_BASE=https://signature-builder-v1.vercel.app
 ```
 
 ## Escopo atual

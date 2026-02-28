@@ -19,7 +19,7 @@ interface SavedProfile {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "signature-salesiano:profiles";
+const STORAGE_KEY = "signature-builder-v1:profiles";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

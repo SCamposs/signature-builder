@@ -15,7 +15,7 @@ const INSTAGRAM_URL = "https://www.instagram.com/salesianoresende";
 const LINKEDIN_URL = "https://www.linkedin.com/in/salesiano-resende-colégio/";
 const DEFAULT_ASSET_BASE =
   process.env.NEXT_PUBLIC_SIGNATURE_ASSET_BASE?.trim() ||
-  "https://signature-salesiano.vercel.app";
+  "https://signature-builder-v1.vercel.app";
 
 export function buildSignatureHTML(
   data: SignatureData,
