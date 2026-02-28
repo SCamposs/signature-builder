@@ -65,13 +65,13 @@ export function buildSignatureHTML(
           ${data.role.trim() ? `<tr><td style="font-size:12px;color:#333333;padding-bottom:1px;font-family:Arial,Helvetica,sans-serif;">${esc(data.role)}</td></tr>` : ""}
           ${data.department.trim() ? `<tr><td style="font-size:11px;color:#555555;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;padding-bottom:3px;font-family:Arial,Helvetica,sans-serif;">${esc(data.department)}</td></tr>` : ""}
           <tr>
-            <td style="font-size:10px;color:#888888;padding-top:2px;font-family:Arial,Helvetica,sans-serif;">
+            <td style="font-size:10px;color:#888888;padding-top:2px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;">
               ${INSTITUTION}
             </td>
           </tr>
         </tbody></table>
       </td>
-      <td style="width:1px;background-color:${BLUE};opacity:0.12">&nbsp;</td>
+      <td style="width:1px;background-color:${BLUE};font-size:0;line-height:0;opacity:0.1;">&nbsp;</td>
       <td style="width:12px;">&nbsp;</td>
       <td style="vertical-align:top;padding-right:12px;">
         <table cellpadding="0" cellspacing="0" border="0"><tbody>
@@ -112,7 +112,6 @@ export function buildSignatureHTML(
         </a>
       </td>
     </tr>
-    <tr><td colspan="5" style="height:8px;font-size:0;line-height:0;"></td></tr>
     <tr>
       <td colspan="5" style="height:1px;background-color:${BLUE};font-size:0;line-height:0;">&nbsp;</td>
     </tr>
@@ -122,7 +121,7 @@ export function buildSignatureHTML(
           <td style="vertical-align:middle;padding-right:8px;">
             <img src="${img("/assets/logo-arco-s.png")}" alt="S Salesiano" height="22" style="display:block;border:0;" />
           </td>
-          <td style="width:1px;background-color:${BLUE};opacity:0.12;">&nbsp;</td>
+          <td style="width:1px;background-color:${BLUE};font-size:0;line-height:0;opacity:0.1;">&nbsp;</td>
           <td style="width:8px;">&nbsp;</td>
           <td style="vertical-align:middle;padding-right:5px;"><a href="${facebookUrl}" target="_blank"><img src="${img("/assets/facebook.png")}" alt="Facebook" width="20" height="20" style="display:block;border:0;" /></a></td>
           <td style="vertical-align:middle;padding-right:5px;"><a href="${instagramUrl}" target="_blank"><img src="${img("/assets/instagram.png")}" alt="Instagram" width="20" height="20" style="display:block;border:0;" /></a></td>
@@ -150,13 +149,13 @@ export function buildSignatureHTML(
           ${data.role.trim() ? `<tr><td style="font-size:13px;color:#333333;padding-bottom:2px;font-family:Arial,Helvetica,sans-serif;">${esc(data.role)}</td></tr>` : ""}
           ${data.department.trim() ? `<tr><td style="font-size:12px;color:#555555;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;">${esc(data.department)}</td></tr>` : ""}
           <tr>
-            <td style="font-size:11px;color:#888888;padding-top:3px;font-family:Arial,Helvetica,sans-serif;">
+            <td style="font-size:11px;color:#888888;padding-top:3px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;">
               ${INSTITUTION}
             </td>
           </tr>
         </tbody></table>
       </td>
-      <td style="width:2px;background-color:${BLUE};opacity:0.1">&nbsp;</td>
+      <td style="width:2px;background-color:${BLUE};font-size:0;line-height:0;opacity:0.1;">&nbsp;</td>
       <td style="width:16px;">&nbsp;</td>
       <td width="212" style="vertical-align:top;padding-right:18px;">
         <table cellpadding="0" cellspacing="0" border="0"><tbody>
@@ -203,7 +202,6 @@ export function buildSignatureHTML(
         </a>
       </td>
     </tr>
-    <tr><td colspan="6" style="height:10px;font-size:0;line-height:0;"></td></tr>
     <tr>
       <td colspan="6" style="height:2px;background-color:${BLUE};font-size:0;line-height:0;">&nbsp;</td>
     </tr>
@@ -215,7 +213,7 @@ export function buildSignatureHTML(
               <img src="${img("/assets/logo-arco-s.png")}" alt="S Salesiano"
                 height="26" style="display:block;border:0;" />
             </td>
-            <td style="width:1px;background-color:${BLUE};opacity:0.1;">&nbsp;</td>
+            <td style="width:1px;background-color:${BLUE};font-size:0;line-height:0;opacity:0.1;">&nbsp;</td>
             <td style="width:10px;">&nbsp;</td>
             <td style="vertical-align:middle;padding-right:6px;">
               <a href="${facebookUrl}" target="_blank">
