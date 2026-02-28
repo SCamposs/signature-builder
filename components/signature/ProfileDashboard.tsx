@@ -2,14 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
-import {
-  Download,
-  PackageCheck,
-  Pencil,
-  Search,
-  Users,
-  X,
-} from "lucide-react";
+import { Download, PackageCheck, Pencil, Search, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { buildSignatureHTML } from "@/lib/signature-builder";
