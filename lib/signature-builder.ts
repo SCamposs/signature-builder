@@ -254,7 +254,7 @@ function buildLatestSignatureHTML({
   img: (path: string) => string;
   emailAddr: string;
 }): string {
-  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">|</span> RJ";
+  const location = "Av. Ariclino Dias, 256 <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">-</span> Jardim Jalisco<br />Resende <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">|</span> RJ";
   const contactIcon = (asset: string) => `
     <td width="22" style="width:22px;padding:0 7px 0 0;vertical-align:middle;line-height:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="22" height="22" style="border-collapse:collapse;width:22px;height:22px;background:#e6394a;border-radius:50%;"><tbody><tr>
@@ -292,9 +292,9 @@ function buildLatestSignatureHTML({
         <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
           <tbody>
             <tr>
-              <td style="padding:0 0 1px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:27px;font-weight:800;line-height:30px;color:#00518e;white-space:nowrap;">${esc(data.name)}</td>
+              <td colspan="2" style="padding:0 0 1px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:27px;font-weight:800;line-height:30px;color:#00518e;white-space:nowrap;">${esc(data.name)}</td>
             </tr>
-            ${data.role.trim() ? `<tr><td style="padding:0 0 8px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:17px;font-weight:800;line-height:19px;color:#101010;">${esc(data.role)}</td></tr>` : ""}
+            ${data.role.trim() ? `<tr><td colspan="2" style="padding:0 0 8px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:17px;font-weight:800;line-height:19px;color:#101010;">${esc(data.role)}</td></tr>` : ""}
             <tr>
               ${contactIcon("/assets/map-pin.svg")}
               <td style="padding:0 0 6px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;line-height:18px;color:#101010;">${location}</td>
