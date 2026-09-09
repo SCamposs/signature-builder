@@ -254,7 +254,7 @@ function buildLatestSignatureHTML({
   img: (path: string) => string;
   emailAddr: string;
 }): string {
-  const location = "Av. Ariclino Dias, 256 <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">-</span> Jardim Jalisco<br />Resende <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">|</span> RJ";
+  const location = "Av. Ariclino Dias, 256 <span style=\"font-family:'Geraldton Bold',Arial,Helvetica,sans-serif;font-weight:700;\">-</span> Jardim Jalisco<br />Resende <span style=\"font-family:'Geraldton Bold',Arial,Helvetica,sans-serif;font-weight:700;\">|</span> RJ";
   const contactIcon = (asset: string) => `
     <td width="22" style="width:22px;padding:0 7px 0 0;vertical-align:middle;line-height:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="22" height="22" style="border-collapse:collapse;width:22px;height:22px;background:#e6394a;border-radius:50%;"><tbody><tr>
@@ -264,7 +264,7 @@ function buildLatestSignatureHTML({
       </tr></tbody></table>
     </td>`;
 
-  const latestEmail = esc(emailAddr).replace("@", "<span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">@</span>");
+  const latestEmail = esc(emailAddr).replace("@", "<span style=\"font-family:'Geraldton Bold',Arial,Helvetica,sans-serif;font-weight:700;\">@</span>");
 
   const phoneRow = `<tr>
     ${contactIcon("/assets/phone-new.svg")}
@@ -276,7 +276,8 @@ function buildLatestSignatureHTML({
   return `
 <style type="text/css">
   @font-face { font-family: 'Facundo Black'; src: url('${img("/assets/facundo-black.otf")}') format('opentype'); font-weight: 800; }
-  @font-face { font-family: 'Geraldton Black'; src: url('${img("/assets/geraldton-black.otf")}') format('opentype'); font-weight: 900; }
+  @font-face { font-family: 'Facundo Bold'; src: url('${img("/assets/facundo-bold.otf")}') format('opentype'); font-weight: 700; }
+  @font-face { font-family: 'Geraldton Bold'; src: url('${img("/assets/geraldton-bold.otf")}') format('opentype'); font-weight: 700; }
 </style>
 <table cellpadding="0" cellspacing="0" border="0" width="650" style="width:650px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;background:#ffffff;">
   <tbody>
@@ -297,12 +298,12 @@ function buildLatestSignatureHTML({
             ${data.role.trim() ? `<tr><td colspan="2" style="padding:0 0 8px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:17px;font-weight:800;line-height:19px;color:#101010;">${esc(data.role)}</td></tr>` : ""}
             <tr>
               ${contactIcon("/assets/map-pin.svg")}
-              <td style="padding:0 0 6px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;line-height:18px;color:#101010;">${location}</td>
+              <td style="padding:0 0 6px;vertical-align:middle;font-family:'Facundo Bold',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;line-height:18px;color:#101010;">${location}</td>
             </tr>
             ${phoneRow}
             <tr>
               ${contactIcon("/assets/mail-new.svg")}
-              <td style="padding:0 0 10px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;line-height:18px;white-space:nowrap;">
+              <td style="padding:0 0 10px;vertical-align:middle;font-family:'Facundo Bold',Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;line-height:18px;white-space:nowrap;">
                 <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;">${latestEmail}</a>
               </td>
             </tr>
