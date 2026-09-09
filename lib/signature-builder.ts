@@ -254,7 +254,7 @@ function buildLatestSignatureHTML({
   img: (path: string) => string;
   emailAddr: string;
 }): string {
-  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende <span style=\"font-family:Arial,Helvetica,sans-serif;\">|</span> RJ";
+  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende <span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">|</span> RJ";
   const contactIcon = (asset: string) => `
     <td width="22" style="width:22px;padding:0 7px 0 0;vertical-align:middle;line-height:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="22" height="22" style="border-collapse:collapse;width:22px;height:22px;background:#e6394a;border-radius:50%;"><tbody><tr>
@@ -264,7 +264,7 @@ function buildLatestSignatureHTML({
       </tr></tbody></table>
     </td>`;
 
-  const latestEmail = esc(emailAddr).replace("@", "<span style=\"font-family:Arial,Helvetica,sans-serif;\">@</span>");
+  const latestEmail = esc(emailAddr).replace("@", "<span style=\"font-family:'Geraldton Black',Arial,Helvetica,sans-serif;font-weight:900;\">@</span>");
 
   const phoneRow = `<tr>
     ${contactIcon("/assets/phone-new.svg")}
@@ -276,6 +276,7 @@ function buildLatestSignatureHTML({
   return `
 <style type="text/css">
   @font-face { font-family: 'Facundo Black'; src: url('${img("/assets/facundo-black.otf")}') format('opentype'); font-weight: 800; }
+  @font-face { font-family: 'Geraldton Black'; src: url('${img("/assets/geraldton-black.otf")}') format('opentype'); font-weight: 900; }
 </style>
 <table cellpadding="0" cellspacing="0" border="0" width="650" style="width:650px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;background:#ffffff;">
   <tbody>
