@@ -254,7 +254,7 @@ function buildLatestSignatureHTML({
   img: (path: string) => string;
   emailAddr: string;
 }): string {
-  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende | RJ";
+  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende <span style=\"font-family:Arial,Helvetica,sans-serif;\">|</span> RJ";
   const contactIcon = (asset: string) => `
     <td width="22" style="width:22px;padding:0 7px 0 0;vertical-align:middle;line-height:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="22" height="22" style="border-collapse:collapse;width:22px;height:22px;background:#e6394a;border-radius:50%;"><tbody><tr>
@@ -264,14 +264,14 @@ function buildLatestSignatureHTML({
       </tr></tbody></table>
     </td>`;
 
-  const phoneRow = data.phone.trim()
-    ? `<tr>
-        ${contactIcon("/assets/phone-new.svg")}
-        <td style="padding:0 0 5px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;line-height:18px;color:#101010;white-space:nowrap;">
-          <a href="tel:${sanitizePhone(data.phone)}" style="color:#101010;text-decoration:none;">${esc(data.phone)}</a>
-        </td>
-      </tr>`
-    : "";
+  const latestEmail = esc(emailAddr).replace("@", "<span style=\"font-family:Arial,Helvetica,sans-serif;\">@</span>");
+
+  const phoneRow = `<tr>
+    ${contactIcon("/assets/phone-new.svg")}
+    <td style="padding:0 0 5px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;line-height:18px;color:#101010;white-space:nowrap;">
+      <a href="tel:+552433551389" style="color:#101010;text-decoration:none;">(24) 3355 - 1389</a>
+    </td>
+  </tr>`;
 
   return `
 <style type="text/css">
@@ -302,7 +302,7 @@ function buildLatestSignatureHTML({
             <tr>
               ${contactIcon("/assets/mail-new.svg")}
               <td style="padding:0 0 10px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;line-height:18px;white-space:nowrap;">
-                <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;">${esc(emailAddr)}</a>
+                <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;">${latestEmail}</a>
               </td>
             </tr>
             <tr>
