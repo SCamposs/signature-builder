@@ -304,7 +304,7 @@ function buildLatestSignatureHTML({
             <tr>
               ${contactIcon("/assets/mail-new.svg")}
               <td style="padding:0 0 10px;vertical-align:middle;font-family:'Facundo Bold',Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;line-height:18px;white-space:nowrap;">
-                <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;">${latestEmail}</a>
+                <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;display:inline-block;padding-top:3px;">${latestEmail}</a>
               </td>
             </tr>
             <tr>
