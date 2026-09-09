@@ -24,11 +24,17 @@ export function buildSignatureHTML(
   const normalizedBase = base.trim().replace(/\/+$/, "");
   const img = (path: string) => `${normalizedBase}${path}`;
   const template: SignatureTemplate =
-    data.template === "compact" ? "compact" : "standard";
+    data.template === "compact" || data.template === "latest"
+      ? data.template
+      : "standard";
   const emailAddr = data.email.trim() || EMAIL_FALLBACK;
   const facebookUrl = normalizeUrl(data.facebookUrl, FACEBOOK_URL);
   const instagramUrl = normalizeUrl(data.instagramUrl, INSTAGRAM_URL);
   const linkedinUrl = normalizeUrl(data.linkedinUrl, LINKEDIN_URL);
+
+  if (template === "latest") {
+    return buildLatestSignatureHTML({ data, img, emailAddr });
+  }
 
   const directPhoneRow = data.phone.trim()
     ? `<tr>
@@ -239,6 +245,96 @@ export function buildSignatureHTML(
 </table>`.trim();
 }
 
+function buildLatestSignatureHTML({
+  data,
+  img,
+  emailAddr,
+}: {
+  data: SignatureData;
+  img: (path: string) => string;
+  emailAddr: string;
+}): string {
+  const location = "Av. Ariclino Dias, 256 - Jardim Jalisco<br />Resende | RJ";
+  const contactIcon = (asset: string) => `
+    <td width="22" style="width:22px;padding:0 7px 0 0;vertical-align:middle;line-height:0;">
+      <table cellpadding="0" cellspacing="0" border="0" width="22" height="22" style="border-collapse:collapse;width:22px;height:22px;background:#e6394a;border-radius:50%;"><tbody><tr>
+        <td align="center" valign="middle" style="line-height:0;text-align:center;vertical-align:middle;">
+          <img src="${img(asset)}" alt="" width="13" height="13" style="display:block;border:0;filter:brightness(0) invert(1);margin:0 auto;" />
+        </td>
+      </tr></tbody></table>
+    </td>`;
+
+  const phoneRow = data.phone.trim()
+    ? `<tr>
+        ${contactIcon("/assets/phone-new.svg")}
+        <td style="padding:0 0 5px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;line-height:18px;color:#101010;white-space:nowrap;">
+          <a href="tel:${sanitizePhone(data.phone)}" style="color:#101010;text-decoration:none;">${esc(data.phone)}</a>
+        </td>
+      </tr>`
+    : "";
+
+  return `
+<style type="text/css">
+  @font-face { font-family: 'Facundo Black'; src: url('${img("/assets/facundo-black.otf")}') format('opentype'); font-weight: 800; }
+</style>
+<table cellpadding="0" cellspacing="0" border="0" width="650" style="width:650px;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;background:#ffffff;">
+  <tbody>
+    <tr>
+      <td width="270" style="width:270px;padding:14px 28px 20px 30px;vertical-align:middle;text-align:center;">
+        <a href="${WEBSITE_URL}" target="_blank" style="text-decoration:none;">
+          <img src="${img("/assets/logo-salesiano-resende.png")}" alt="Salesiano Resende" width="205" style="display:block;width:205px;height:auto;border:0;margin:0 auto;" />
+        </a>
+      </td>
+      <td width="3" style="width:3px;background:#175092;font-size:0;line-height:0;">&nbsp;</td>
+      <td width="1" style="width:1px;font-size:0;line-height:0;">&nbsp;</td>
+      <td style="padding:38px 12px 16px 44px;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+          <tbody>
+            <tr>
+              <td style="padding:0 0 1px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:27px;font-weight:800;line-height:30px;color:#00518e;white-space:nowrap;">${esc(data.name)}</td>
+            </tr>
+            ${data.role.trim() ? `<tr><td style="padding:0 0 8px;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:17px;font-weight:800;line-height:19px;color:#101010;">${esc(data.role)}</td></tr>` : ""}
+            <tr>
+              ${contactIcon("/assets/map-pin.svg")}
+              <td style="padding:0 0 6px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;line-height:18px;color:#101010;">${location}</td>
+            </tr>
+            ${phoneRow}
+            <tr>
+              ${contactIcon("/assets/mail-new.svg")}
+              <td style="padding:0 0 10px;vertical-align:middle;font-family:'Facundo Black',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;line-height:18px;white-space:nowrap;">
+                <a href="mailto:${emailAddr}" style="color:#145596;text-decoration:none;">${esc(emailAddr)}</a>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:0;line-height:0;">
+                <a href="https://www.salesianos.br" target="_blank" style="text-decoration:none;">
+                  <img src="${img("/assets/salesianos.br.png")}" alt="salesianos.br" width="164" style="display:block;width:164px;height:auto;border:0;" />
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="4" style="padding:20px 0 0;">
+        <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto;">
+          <tbody>
+            <tr>
+              <td style="padding:0 8px 0 0;"><img src="${img("/assets/melhores-ongs-2017.png")}" alt="Melhores ONGs 2017" width="72" height="72" style="display:block;border:0;" /></td>
+              <td style="padding:0 8px 0 0;"><img src="${img("/assets/melhores-ongs-2018.png")}" alt="Melhores ONGs 2018" width="72" height="72" style="display:block;border:0;" /></td>
+              <td style="padding:0 8px 0 0;"><img src="${img("/assets/melhores-ongs-2021.png")}" alt="Melhores ONGs 2021" width="72" height="72" style="display:block;border:0;" /></td>
+              <td style="padding:0 8px 0 0;"><img src="${img("/assets/melhores-ongs-2022.png")}" alt="Melhores ONGs 2022" width="72" height="72" style="display:block;border:0;" /></td>
+              <td style="padding:0 30px 0 0;"><img src="${img("/assets/melhores-ongs-2023.png")}" alt="Melhores ONGs 2023" width="72" height="72" style="display:block;border:0;" /></td>
+              <td style="padding:0;"><img src="${img("/assets/logo_selo.png")}" alt="Selo Social" width="142" style="display:block;border:0;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>`.trim();
+}
 function esc(str: string): string {
   return str
     .replace(/&/g, "&amp;")

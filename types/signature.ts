@@ -1,4 +1,4 @@
-export type SignatureTemplate = "standard" | "compact";
+export type SignatureTemplate = "standard" | "compact" | "latest";
 
 export interface SignatureData {
   template: SignatureTemplate;

@@ -39,7 +39,7 @@ const CSV_HEADER = "nome,cargo,setor,telefone,email,template";
 const CSV_EXAMPLE = `${CSV_HEADER}
 Maria da Silva,Coordenadora Pedagógica,Ensino Médio,(24) 3355-1389,maria.silva@salesiano.br,standard
 João Santos,Professor,Ensino Fundamental,(24) 3355-0000,joao.santos@salesiano.br,standard
-Ana Lima,Secretária,Coordenação,(24) 3355-1390,ana.lima@salesiano.br,compact`;
+Ana Lima,Secretária,Coordenação,(24) 3355-1390,ana.lima@salesiano.br,latest`;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,7 +86,8 @@ function parseCsv(raw: string): CsvRow[] {
       department,
       phone,
       email,
-      template: tpl === "compact" ? "compact" : "standard",
+      template:
+        tpl === "compact" || tpl === "latest" ? tpl : "standard",
     };
 
     return { index: i + 1, raw: line, data, errors };
@@ -299,8 +300,8 @@ export function BatchGenerator() {
           nome, cargo, setor, telefone, email, template
         </code>
         <p className="mt-1.5 text-[11px] text-slate-400">
-          A coluna <em>template</em> aceita <code>standard</code> (padrão) ou{" "}
-          <code>compact</code>. Setor e telefone são opcionais. A linha de
+          A coluna <em>template</em> aceita <code>latest</code> (nova versão),{" "}
+          <code>standard</code> ou <code>compact</code>. Setor e telefone são opcionais. A linha de
           cabeçalho é ignorada automaticamente.
         </p>
       </div>

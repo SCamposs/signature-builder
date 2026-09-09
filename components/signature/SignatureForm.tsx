@@ -67,7 +67,10 @@ export function SignatureForm({
       return {
         ...emptySignature,
         ...decoded,
-        template: decoded.template === "compact" ? "compact" : "standard",
+        template:
+          decoded.template === "compact" || decoded.template === "latest"
+            ? decoded.template
+            : "standard",
       } as SignatureData;
     } catch {
       return emptySignature;
@@ -451,6 +454,7 @@ export function SignatureForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="latest">Nova versão</SelectItem>
             <SelectItem value="standard">Padrão (completo)</SelectItem>
             <SelectItem value="compact">Compacto (mais curto)</SelectItem>
           </SelectContent>
@@ -708,7 +712,10 @@ function ensureSignatureData(data: SignatureData): SignatureData {
   return {
     ...emptySignature,
     ...data,
-    template: data?.template === "compact" ? "compact" : "standard",
+    template:
+      data?.template === "compact" || data?.template === "latest"
+        ? data.template
+        : "standard",
   };
 }
 
